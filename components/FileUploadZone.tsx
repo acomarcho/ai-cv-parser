@@ -12,6 +12,7 @@ import { ChevronDown } from "lucide-react";
 
 export default function FileUploadZone() {
   const [files, setFiles] = useState<File[]>([]);
+  const [isProcessing, setIsProcessing] = useState(false);
 
   const onDrop = useCallback((acceptedFiles: File[]) => {
     // Filter only PDF files
@@ -27,6 +28,33 @@ export default function FileUploadZone() {
       "application/pdf": [".pdf"],
     },
   });
+
+  const processCvs = async () => {
+    setIsProcessing(true);
+    try {
+      for (const file of files) {
+        const formData = new FormData();
+        formData.append("file", file);
+
+        const response = await fetch("/api/process-cv", {
+          method: "POST",
+          body: formData,
+        });
+
+        if (!response.ok) {
+          const error = await response.json();
+          throw new Error(error.error || "Failed to process CV");
+        }
+
+        const result = await response.json();
+        console.log(`Processed ${file.name}:`, result);
+      }
+    } catch (error) {
+      console.error("Error processing CVs:", error);
+    } finally {
+      setIsProcessing(false);
+    }
+  };
 
   return (
     <div className="mt-8">
@@ -94,18 +122,19 @@ export default function FileUploadZone() {
 
       <div className="flex justify-end">
         <button
-          disabled={files.length === 0}
+          disabled={files.length === 0 || isProcessing}
           className={`
           mt-4 px-4 py-2 rounded-lg
           transition-colors duration-200
           ${
-            files.length === 0
+            files.length === 0 || isProcessing
               ? "bg-stone-300 cursor-not-allowed text-stone-500"
               : "bg-stone-800 text-white hover:bg-stone-600 active:bg-stone-700"
           }
         `}
+          onClick={processCvs}
         >
-          Process CVs
+          {isProcessing ? "Processing..." : "Process CVs"}
         </button>
       </div>
     </div>
