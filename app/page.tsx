@@ -1,3 +1,5 @@
+import FileUploadZone from "@/components/FileUploadZone";
+
 export default function Home() {
   return (
     <div className="p-8">
@@ -8,6 +10,7 @@ export default function Home() {
       <p className="text-stone-500 text-lg">
         We will parse your CV and extract the information for you.
       </p>
+      <FileUploadZone />
     </div>
   );
 }
