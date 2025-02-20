@@ -1,7 +1,14 @@
 "use client";
 
-import { useState, useCallback } from "react";
+import { useState, useCallback, Fragment } from "react";
 import { useDropzone } from "react-dropzone";
+import {
+  Disclosure,
+  DisclosureButton,
+  DisclosurePanel,
+  Transition,
+} from "@headlessui/react";
+import { ChevronDown } from "lucide-react";
 
 export default function FileUploadZone() {
   const [files, setFiles] = useState<File[]>([]);
@@ -47,14 +54,41 @@ export default function FileUploadZone() {
 
       {files.length > 0 && (
         <div className="mt-4">
-          <h3 className="text-stone-700 font-medium mb-2">Uploaded files:</h3>
-          <ul className="space-y-1">
-            {files.map((file, index) => (
-              <li key={index} className="text-stone-600">
-                {file.name}
-              </li>
-            ))}
-          </ul>
+          <Disclosure as="div">
+            {({ open }) => (
+              <>
+                <DisclosureButton className="flex w-full justify-between rounded-lg bg-stone-100 px-4 py-3 text-left text-sm font-medium text-stone-700 hover:bg-stone-200 focus:outline-none focus-visible:ring focus-visible:ring-stone-500 focus-visible:ring-opacity-75">
+                  <span>Uploaded files ({files.length})</span>
+                  <ChevronDown
+                    className={`${
+                      open ? "transform rotate-180" : ""
+                    } h-5 w-5 text-stone-500 transition-transform duration-200`}
+                  />
+                </DisclosureButton>
+                <Transition
+                  show={open}
+                  enter="transition duration-100 ease-out"
+                  enterFrom="transform scale-95 opacity-0"
+                  enterTo="transform scale-100 opacity-100"
+                  leave="transition duration-75 ease-out"
+                  leaveFrom="transform scale-100 opacity-100"
+                  leaveTo="transform scale-95 opacity-0"
+                >
+                  <DisclosurePanel static as={Fragment}>
+                    <div className="bg-white rounded-lg shadow-sm border border-stone-200 px-4 pt-4 pb-2">
+                      <ul className="space-y-1">
+                        {files.map((file, index) => (
+                          <li key={index} className="text-stone-600">
+                            {file.name}
+                          </li>
+                        ))}
+                      </ul>
+                    </div>
+                  </DisclosurePanel>
+                </Transition>
+              </>
+            )}
+          </Disclosure>
         </div>
       )}
     </div>
