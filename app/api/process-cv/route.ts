@@ -1,6 +1,13 @@
 import { NextRequest, NextResponse } from "next/server";
 import { fromBuffer } from "pdf2pic";
 import OpenAI from "openai";
+import { z } from "zod";
+
+const CVSchema = z.object({
+  name: z.string(),
+  email: z.string().email(),
+  phone: z.string().regex(/^\+628\d{8,11}$/, "Phone must be in format +628xxx"),
+});
 
 export async function POST(request: NextRequest) {
   try {
@@ -96,11 +103,24 @@ export async function POST(request: NextRequest) {
         },
       },
     });
-    console.log(response.choices[0].message.content);
 
-    return NextResponse.json({ message: "CV processed successfully" });
+    const content = response.choices[0].message.content;
+    if (!content) {
+      throw new Error("No content in response");
+    }
+
+    const parsedContent = JSON.parse(content);
+    const validatedData = CVSchema.parse(parsedContent);
+
+    return NextResponse.json({ data: validatedData });
   } catch (error) {
     console.error("Error processing CV:", error);
+    if (error instanceof z.ZodError) {
+      return NextResponse.json(
+        { error: "Invalid data format", details: error.errors },
+        { status: 422 }
+      );
+    }
     return NextResponse.json(
       { error: "Failed to process CV" },
       { status: 500 }
