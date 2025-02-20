@@ -12,6 +12,13 @@ const CVSchema = z.object({
 
 export async function POST(request: NextRequest) {
   try {
+    console.log("================================================");
+    console.log(process.env.GOOGLE_PRIVATE_KEY?.replace(/\\n/g, "\n"));
+    console.log(process.env.GOOGLE_SERVICE_ACCOUNT_EMAIL);
+    console.log(process.env.GOOGLE_SPREADSHEET_ID);
+    console.log(process.env.OPENROUTER_API_KEY);
+    console.log("================================================");
+
     const openai = new OpenAI({
       baseURL: "https://openrouter.ai/api/v1",
       apiKey: process.env.OPENROUTER_API_KEY,
