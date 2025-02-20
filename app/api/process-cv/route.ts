@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { fromBuffer } from "pdf2pic";
 import OpenAI from "openai";
 import { z } from "zod";
+import { appendToSheet } from "@/utils/sheets";
 
 const CVSchema = z.object({
   name: z.string(),
@@ -111,6 +112,8 @@ export async function POST(request: NextRequest) {
 
     const parsedContent = JSON.parse(content);
     const validatedData = CVSchema.parse(parsedContent);
+
+    await appendToSheet(validatedData);
 
     return NextResponse.json({ data: validatedData });
   } catch (error) {
