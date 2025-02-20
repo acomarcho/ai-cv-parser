@@ -9,6 +9,7 @@ import {
   Transition,
 } from "@headlessui/react";
 import { ChevronDown } from "lucide-react";
+import { toast } from "sonner";
 
 export default function FileUploadZone() {
   const [files, setFiles] = useState<File[]>([]);
@@ -31,11 +32,12 @@ export default function FileUploadZone() {
 
   const processCvs = async () => {
     setIsProcessing(true);
-    try {
-      // Process files in chunks of 10
-      for (let i = 0; i < files.length; i += 10) {
-        const chunk = files.slice(i, i + 10);
-        const promises = chunk.map(async (file) => {
+
+    // Process files in chunks of 10
+    for (let i = 0; i < files.length; i += 10) {
+      const chunk = files.slice(i, i + 10);
+      const promises = chunk.map(async (file) => {
+        try {
           const formData = new FormData();
           formData.append("file", file);
 
@@ -50,17 +52,17 @@ export default function FileUploadZone() {
           }
 
           const result = await response.json();
-          console.log(`Processed ${file.name}:`, result);
+          toast.success(`Successfully processed ${file.name}`);
           return result;
-        });
+        } catch {
+          toast.error(`Failed to process ${file.name}`);
+        }
+      });
 
-        await Promise.all(promises);
-      }
-    } catch (error) {
-      console.error("Error processing CVs:", error);
-    } finally {
-      setIsProcessing(false);
+      await Promise.all(promises);
     }
+
+    setIsProcessing(false);
   };
 
   return (
