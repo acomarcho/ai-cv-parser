@@ -32,22 +32,29 @@ export default function FileUploadZone() {
   const processCvs = async () => {
     setIsProcessing(true);
     try {
-      for (const file of files) {
-        const formData = new FormData();
-        formData.append("file", file);
+      // Process files in chunks of 10
+      for (let i = 0; i < files.length; i += 10) {
+        const chunk = files.slice(i, i + 10);
+        const promises = chunk.map(async (file) => {
+          const formData = new FormData();
+          formData.append("file", file);
 
-        const response = await fetch("/api/process-cv", {
-          method: "POST",
-          body: formData,
+          const response = await fetch("/api/process-cv", {
+            method: "POST",
+            body: formData,
+          });
+
+          if (!response.ok) {
+            const error = await response.json();
+            throw new Error(error.error || "Failed to process CV");
+          }
+
+          const result = await response.json();
+          console.log(`Processed ${file.name}:`, result);
+          return result;
         });
 
-        if (!response.ok) {
-          const error = await response.json();
-          throw new Error(error.error || "Failed to process CV");
-        }
-
-        const result = await response.json();
-        console.log(`Processed ${file.name}:`, result);
+        await Promise.all(promises);
       }
     } catch (error) {
       console.error("Error processing CVs:", error);

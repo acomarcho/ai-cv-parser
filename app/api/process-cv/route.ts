@@ -26,7 +26,6 @@ export async function POST(request: NextRequest) {
     const pdfBuffer = await file.arrayBuffer();
     const buffer = Buffer.from(pdfBuffer);
 
-    console.time("Image processing");
     const options = {
       density: 100,
       format: "jpg",
@@ -35,9 +34,7 @@ export async function POST(request: NextRequest) {
     };
     const convert = fromBuffer(buffer, options);
     const image = await convert(1, { responseType: "base64" });
-    console.timeEnd("Image processing");
 
-    console.time("OpenAI API call");
     const response = await openai.chat.completions.create({
       model: "google/gemini-2.0-flash-001",
       messages: [
@@ -106,7 +103,6 @@ export async function POST(request: NextRequest) {
         },
       },
     });
-    console.timeEnd("OpenAI API call");
 
     const content = response.choices[0].message.content;
     if (!content) {
