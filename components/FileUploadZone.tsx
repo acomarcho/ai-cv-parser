@@ -20,7 +20,7 @@ export default function FileUploadZone() {
     const pdfFiles = acceptedFiles.filter(
       (file) => file.type === "application/pdf"
     );
-    setFiles((prev) => [...prev, ...pdfFiles]);
+    setFiles([...pdfFiles]);
   }, []);
 
   const { getRootProps, getInputProps, isDragActive } = useDropzone({
