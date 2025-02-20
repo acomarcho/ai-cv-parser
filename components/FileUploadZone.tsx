@@ -91,6 +91,23 @@ export default function FileUploadZone() {
           </Disclosure>
         </div>
       )}
+
+      <div className="flex justify-end">
+        <button
+          disabled={files.length === 0}
+          className={`
+          mt-4 px-4 py-2 rounded-lg
+          transition-colors duration-200
+          ${
+            files.length === 0
+              ? "bg-stone-300 cursor-not-allowed text-stone-500"
+              : "bg-stone-800 text-white hover:bg-stone-600 active:bg-stone-700"
+          }
+        `}
+        >
+          Process CVs
+        </button>
+      </div>
     </div>
   );
 }
