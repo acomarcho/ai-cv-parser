@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
+import { fromBuffer } from "pdf2pic";
 
 export async function POST(request: NextRequest) {
   try {
@@ -9,8 +10,18 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: "No file provided" }, { status: 400 });
     }
 
-    // TODO: Add your CV processing logic here
-    console.log("Processing file:", file);
+    const pdfBuffer = await file.arrayBuffer();
+    const buffer = Buffer.from(pdfBuffer);
+
+    const options = {
+      density: 100,
+      format: "jpg",
+      width: 2048,
+      preserveAspectRatio: true,
+    };
+    const convert = fromBuffer(buffer, options);
+    const images = await convert(1);
+    console.log(images);
 
     return NextResponse.json({ message: "CV processed successfully" });
   } catch (error) {
