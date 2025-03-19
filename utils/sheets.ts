@@ -47,6 +47,7 @@ export async function appendToSheet(data: {
   name: string;
   email: string;
   phone: string;
+  companies: string[];
 }) {
   return new Promise<boolean>((resolve, reject) => {
     sheetQueue.add(async () => {
@@ -60,6 +61,7 @@ export async function appendToSheet(data: {
           Name: data.name,
           Email: data.email,
           Phone: data.phone,
+          Companies: data.companies.join(", "),
         });
 
         resolve(true);
