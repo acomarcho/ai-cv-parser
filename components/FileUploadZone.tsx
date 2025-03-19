@@ -14,6 +14,8 @@ import { toast } from "sonner";
 export default function FileUploadZone() {
   const [files, setFiles] = useState<File[]>([]);
   const [isProcessing, setIsProcessing] = useState(false);
+  const [successfulFiles, setSuccessfulFiles] = useState<File[]>([]);
+  const [failedFiles, setFailedFiles] = useState<File[]>([]);
 
   const onDrop = useCallback((acceptedFiles: File[]) => {
     // Filter only PDF files
@@ -21,6 +23,9 @@ export default function FileUploadZone() {
       (file) => file.type === "application/pdf"
     );
     setFiles([...pdfFiles]);
+    // Reset success/failure states when new files are dropped
+    setSuccessfulFiles([]);
+    setFailedFiles([]);
   }, []);
 
   const { getRootProps, getInputProps, isDragActive } = useDropzone({
@@ -32,6 +37,9 @@ export default function FileUploadZone() {
 
   const processCvs = async () => {
     setIsProcessing(true);
+    // Reset success/failure states at the start of processing
+    setSuccessfulFiles([]);
+    setFailedFiles([]);
 
     // Process files in chunks of 10
     for (let i = 0; i < files.length; i += 10) {
@@ -53,9 +61,11 @@ export default function FileUploadZone() {
 
           const result = await response.json();
           toast.success(`Successfully processed ${file.name}`);
+          setSuccessfulFiles((prev) => [...prev, file]);
           return result;
         } catch {
           toast.error(`Failed to process ${file.name}`);
+          setFailedFiles((prev) => [...prev, file]);
         }
       });
 
@@ -90,7 +100,7 @@ export default function FileUploadZone() {
       </div>
 
       {files.length > 0 && (
-        <div className="mt-4">
+        <div className="mt-4 space-y-4">
           <Disclosure as="div">
             {({ open }) => (
               <>
@@ -126,6 +136,84 @@ export default function FileUploadZone() {
               </>
             )}
           </Disclosure>
+
+          {successfulFiles.length > 0 && (
+            <Disclosure as="div">
+              {({ open }) => (
+                <>
+                  <DisclosureButton className="flex w-full justify-between rounded-lg bg-green-50 px-4 py-3 text-left text-sm font-medium text-green-700 hover:bg-green-100 focus:outline-none focus-visible:ring focus-visible:ring-green-500 focus-visible:ring-opacity-75">
+                    <span>
+                      Successfully processed ({successfulFiles.length})
+                    </span>
+                    <ChevronDown
+                      className={`${
+                        open ? "transform rotate-180" : ""
+                      } h-5 w-5 text-green-500 transition-transform duration-200`}
+                    />
+                  </DisclosureButton>
+                  <Transition
+                    show={open}
+                    enter="transition duration-100 ease-out"
+                    enterFrom="transform scale-95 opacity-0"
+                    enterTo="transform scale-100 opacity-100"
+                    leave="transition duration-75 ease-out"
+                    leaveFrom="transform scale-100 opacity-100"
+                    leaveTo="transform scale-95 opacity-0"
+                  >
+                    <DisclosurePanel static as={Fragment}>
+                      <div className="bg-white rounded-lg shadow-sm border border-green-200 px-4 pt-4 pb-2">
+                        <ul className="space-y-1">
+                          {successfulFiles.map((file, index) => (
+                            <li key={index} className="text-green-600">
+                              {file.name}
+                            </li>
+                          ))}
+                        </ul>
+                      </div>
+                    </DisclosurePanel>
+                  </Transition>
+                </>
+              )}
+            </Disclosure>
+          )}
+
+          {failedFiles.length > 0 && (
+            <Disclosure as="div">
+              {({ open }) => (
+                <>
+                  <DisclosureButton className="flex w-full justify-between rounded-lg bg-red-50 px-4 py-3 text-left text-sm font-medium text-red-700 hover:bg-red-100 focus:outline-none focus-visible:ring focus-visible:ring-red-500 focus-visible:ring-opacity-75">
+                    <span>Failed to process ({failedFiles.length})</span>
+                    <ChevronDown
+                      className={`${
+                        open ? "transform rotate-180" : ""
+                      } h-5 w-5 text-red-500 transition-transform duration-200`}
+                    />
+                  </DisclosureButton>
+                  <Transition
+                    show={open}
+                    enter="transition duration-100 ease-out"
+                    enterFrom="transform scale-95 opacity-0"
+                    enterTo="transform scale-100 opacity-100"
+                    leave="transition duration-75 ease-out"
+                    leaveFrom="transform scale-100 opacity-100"
+                    leaveTo="transform scale-95 opacity-0"
+                  >
+                    <DisclosurePanel static as={Fragment}>
+                      <div className="bg-white rounded-lg shadow-sm border border-red-200 px-4 pt-4 pb-2">
+                        <ul className="space-y-1">
+                          {failedFiles.map((file, index) => (
+                            <li key={index} className="text-red-600">
+                              {file.name}
+                            </li>
+                          ))}
+                        </ul>
+                      </div>
+                    </DisclosurePanel>
+                  </Transition>
+                </>
+              )}
+            </Disclosure>
+          )}
         </div>
       )}
 
