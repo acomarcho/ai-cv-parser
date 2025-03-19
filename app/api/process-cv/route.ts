@@ -34,7 +34,7 @@ export async function POST(request: NextRequest) {
       preserveAspectRatio: true,
     };
     const convert = fromBuffer(buffer, options);
-    const image = await convert(1, { responseType: "base64" });
+    const image = await convert(-1, { responseType: "base64" });
 
     const response = await openai.chat.completions.create({
       model: "google/gemini-2.0-flash-001",
@@ -58,7 +58,9 @@ export async function POST(request: NextRequest) {
               "name": "Marchotridyo",
               "email": "marchotridyo@gmail.com",
               "phone": "+6281234567890"
-            }`,
+            }
+              
+            Any fields that you cannot convert should be returned as "N/A".`,
         },
         {
           role: "user",
@@ -90,12 +92,13 @@ export async function POST(request: NextRequest) {
               },
               email: {
                 type: "string",
-                description: "Email of the person",
+                description:
+                  "Email of the person. If the email is not found, return N/A.",
               },
               phone: {
                 type: "string",
                 description:
-                  "Phone number of the person, formatted in +628xxx, example 081228051404 becomes +6281228051404",
+                  "Phone number of the person, formatted in +628xxx, example 081228051404 becomes +6281228051404. If the phone number is not found, return N/A. If the phone number also is not an Indonesian phone number, return N/A.",
               },
             },
             required: ["name", "email", "phone"],
